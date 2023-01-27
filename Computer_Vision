@@ -1,0 +1,70 @@
+
+## Image Classification
+## Dog vs Cat 
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf # import of tensorflow as tf 
+
+from tensorflow.keras.layers import Flatten, Dense, Conv2D, MaxPool2D, Dropout 
+
+# Flatten: to flatten the vector before passing into the dense layer
+# Dropout : Inorder to reduce the overlearning and overfitting of the training data
+
+from tensorflow.keras.models import Sequential # In order to sequentially align the layers
+
+## Data set: 
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+train_gen = ImageDataGenerator(rescale=1.0/255.0,
+                              width_shift_range=0.2,
+                              height_shift_range=0.2,
+                              zoom_range=0.2,
+                              horizontal_flip=True,
+                              rotation_range = 40,
+                              shear_range=0.2,
+                              fill_mode='nearest')
+
+#train_gen = ImageDataGenerator(rescale=1.0/255.0)
+
+train_data = train_gen.flow_from_directory(directory=r'C:/Users/abhis/OneDrive/Desktop/Ineuron/Dog_cat/training_set',
+                                        batch_size= 20, target_size = (128,128),
+                                        class_mode = 'binary',
+                                        seed = 42,
+                                        color_mode = 'rgb')
+
+## model set_up: Convulation sequence of 16, 32, 64 feature layers and 2 fully connected layers
+Dog_cat = Sequential([Conv2D(filters = 32, kernel_size=(3,3), activation='relu', input_shape=(128,128,3)),
+                    MaxPool2D(pool_size=(2,2)),
+                    Conv2D(filters = 64, kernel_size=(3,3), activation='relu'),
+                    MaxPool2D(pool_size=(2,2)), 
+                    Conv2D(filters = 128, kernel_size=(3,3), activation='relu'),
+                    MaxPool2D(pool_size=(2,2)),
+                    Flatten(),
+                    Dense(512, activation='relu'),
+                    Dense(1, activation ='sigmoid')])
+
+## callback to early exit
+
+class call():
+    pass
+
+Dog_cat.compile(optimizer= tf.keras.optimizers.Adam(learning_rate= 0.001),
+               loss= tf.keras.losses.BinaryCrossentropy(),
+               metrics='accuracy')
+
+Dog_cat.fit(train_data, steps_per_epoch= 400,
+       epochs = 10)
+       
+## training data:
+test_gen = ImageDataGenerator(rescale=1.0/255.0)
+
+test_data = test_gen.flow_from_directory(directory=r'C:\Users\abhis\OneDrive\Desktop\Ineuron\Dog_cat\test_set',
+                                        batch_size= 20, target_size = (128,128),
+                                        class_mode = 'binary',
+                                        seed = 42,
+                                        color_mode = 'rgb')
+## evaluation step:
+Dog_cat.evaluate(test_data,
+                steps= 101)
